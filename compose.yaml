@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_USER: lab
+      POSTGRES_PASSWORD: local-lab-only
+      POSTGRES_DB: lab
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U lab -d lab]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    cpus: 0.4
+    mem_limit: 768m
+  app:
+    image: single-server-performance-lab:local
+    build: .
+    environment:
+      DATABASE_URL: postgres://lab:local-lab-only@db:5432/lab
+      DATA_SOURCE: postgres
+      MODE: ${MODE:-baseline}
+      CACHE_TTL_MS: 1000
+      DB_POOL_SIZE: 10
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    cpus: 0.5
+    mem_limit: 1024m
+  nginx:
+    image: nginx:1.27-bookworm
+    ports:
+      - '127.0.0.1:8080:80'
+    volumes:
+      - ./nginx/${NGINX_MODE:-baseline}.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    cpus: 0.1
+    mem_limit: 256m
+  k6:
+    image: grafana/k6:0.57.0
+    profiles: [load]
+    environment:
+      BASE_URL: http://nginx
+      NO_PROXY: nginx,app,db,localhost,127.0.0.1
+      VUS: ${VUS:-50}
+      DURATION: ${DURATION:-60s}
+      MAX_USER_ID: ${MAX_USER_ID:-50000}
+      POST_PROBABILITY: ${POST_PROBABILITY:-0.01}
+    volumes:
+      - ./load:/scripts:ro
+      - ./results:/results
+    depends_on: [nginx]
+volumes:
+  pgdata:

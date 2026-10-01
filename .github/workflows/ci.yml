@@ -1,0 +1,45 @@
+name: API and PostgreSQL checks
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lab
+          POSTGRES_PASSWORD: local-lab-only
+          POSTGRES_DB: lab
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U lab -d lab"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      DATABASE_URL: postgres://lab:local-lab-only@localhost:5432/lab
+      TEST_DATABASE_URL: postgres://lab:local-lab-only@localhost:5432/lab
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: psql "$DATABASE_URL" -f db/init.sql
+      - run: npm run seed
+        env:
+          SEED_USERS: 100
+          SEED_POSTS: 1000
+          SEED_LIKES: 2000
+      - run: npm test
+      - run: docker compose config --quiet
+      - run: docker compose up -d --build
+      - run: docker compose run --rm -e SEED_USERS=100 -e SEED_POSTS=1000 -e SEED_LIKES=2000 app npm run seed
+      - run: node scripts/check-stack.js baseline
+      - run: MODE=node-cache NGINX_MODE=baseline docker compose up -d --force-recreate app nginx
+      - run: node scripts/check-stack.js node-cache
+      - run: MODE=baseline NGINX_MODE=microcache docker compose up -d --force-recreate app nginx
+      - run: node scripts/check-stack.js nginx-cache
+      - if: always()
+        run: docker compose logs --tail=100
+      - if: always()
+        run: docker compose down

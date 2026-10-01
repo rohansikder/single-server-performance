@@ -1,0 +1,14 @@
+{
+  "name": "single-server-performance-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node src/server.js",
+    "demo": "DATA_SOURCE=memory node src/server.js",
+    "test": "node --test",
+    "seed": "node db/seed.js"
+  },
+  "dependencies": { "pg": "8.16.3" }
+}
