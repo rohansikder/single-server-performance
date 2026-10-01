@@ -3,12 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "node src/server.js",
     "demo": "DATA_SOURCE=memory node src/server.js",
     "test": "node --test",
-    "seed": "node db/seed.js"
+    "seed": "node db/seed.js",
+    "check:visuals": "node scripts/check-visual-data.js"
   },
-  "dependencies": { "pg": "8.16.3" }
+  "dependencies": {
+    "pg": "8.16.3"
+  }
 }

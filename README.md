@@ -2,7 +2,31 @@
 
 How much work can one server avoid by caching the same public feed?
 
-A standalone experiment comparing three ways to serve a social feed: an indexed database query, a one-second application cache, and a one-second Nginx microcache. Built with **Node.js, PostgreSQL, Nginx, and k6**, the lab shows how moving the cache changes the request path, throughput, latency, and freshness. It includes deterministic seed data, API and PostgreSQL checks, measured results, and a live metrics page.
+A standalone experiment comparing three ways to serve a social feed: an indexed database query, a one-second application cache, and a one-second Nginx microcache. Built with **Node.js, PostgreSQL, Nginx, and k6**, the lab shows how moving the cache changes the request path, throughput, latency, and freshness. It includes deterministic seed data, API and PostgreSQL checks, measured results, and an interactive dashboard with live metrics.
+
+## Results at a glance
+
+![Measured throughput and median latency for the three server configurations](docs/assets/performance-overview.svg)
+
+The Nginx run recorded **2.28× baseline throughput** and **1.08 ms median latency**, with zero HTTP failures across the three feed runs. These are single **15-second smoke tests at 20 VUs**, with a shared host and no dedicated warm-up. They do not establish production capacity. Both caches had higher p95/p99 than baseline in these samples.
+
+![Median, p95 and p99 latency comparison showing that the tail did not improve over baseline](docs/assets/latency-comparison.svg)
+
+## Interactive results dashboard
+
+Run `npm run demo` and open **http://localhost:3000**. The dashboard includes percentile controls, clickable architecture paths, live query/cache-hit rate charts, a ten-request demo, and CSV export. Recorded results and live telemetry are labeled separately. The measured charts also work as a static report when serving `docs/dashboard.html` without the API; live features require the server.
+
+![Desktop results dashboard with measured comparison charts and percentile controls](docs/assets/dashboard-preview.png)
+
+Vector and PNG versions of the charts are available in [docs/assets](docs/assets). To regenerate them from the raw k6 summaries:
+
+```bash
+python -m pip install -r scripts/requirements-visuals.txt
+python scripts/generate-visuals.py
+npm run check:visuals
+```
+
+Edit `docs/dashboard.template.html` for presentation changes; the generator writes `docs/dashboard.html` and `docs/assets/benchmark-data.json` from the checked-in summaries. Every plotted value comes from those summaries; the live curve uses real counter differences, not invented historical samples.
 
 ## The experiment
 
@@ -12,17 +36,7 @@ A standalone experiment comparing three ways to serve a social feed: an indexed 
 | Node cache | Nginx → Node → one-second in-process JSON cache | Lower database traffic; coalesced cache misses |
 | Nginx microcache | Nginx → one-second proxy cache; Node on misses | Fewer application requests and serializations |
 
-```mermaid
-flowchart LR
-    K[k6 virtual users] --> N[Nginx :8080]
-    N --> C{Public feed microcache?}
-    C -->|hit| R[JSON response]
-    C -->|miss / disabled| A[Node.js API]
-    A --> M{Application cache?}
-    M -->|hit| R
-    M -->|miss / disabled| P[(PostgreSQL)]
-    P --> A
-```
+![Architecture paths for baseline, Node cache hits and Nginx cache hits](docs/assets/architecture.svg)
 
 The comparison holds the workload and target resource limits fixed. Cache hits avoid different amounts of work: the application cache skips the database query, while the proxy cache also skips the Node request handler. Hardware, request mix, think time, and test duration all affect the measured result.
 

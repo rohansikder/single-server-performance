@@ -34,12 +34,12 @@ An initial short proxy-cache journey recorded roughly 501 ms p95 with the defaul
 
 ## Explore the implementation
 
-1. Open the live metrics page and inspect process counters. Compare throughput and latency in the saved k6 summaries.
-2. Inspect the indexed feed query and compare the three request paths described in the README.
+1. Open the results dashboard and compare throughput, median, p95 and p99. Recorded results are separate from live process counters.
+2. Select the architecture paths and inspect the indexed feed query. The diagram controls illustrate request paths; they do not change the running server's mode.
 3. Run the PostgreSQL stack in baseline mode. Each feed request increases `feedQueries` because it executes a feed query.
 4. Run Node-cache mode and inspect `X-App-Cache`, cache-hit counters and coalesced refreshes. After a successful post or like write, inspect the next feed load to observe invalidation.
 5. Run Nginx microcache mode and inspect `X-Proxy-Cache: HIT`. Proxy hits bypass Node, so they do not appear in Node's request or cache-hit counters. On a proxy hit, `X-App-Cache` is a stored upstream header rather than evidence that Node ran.
-6. Compare the saved k6 summaries. Capture counters, resource usage, latency percentiles and failures when running additional experiments.
+6. Export the recorded CSV and compare it with the saved k6 summaries. Capture counters, resource usage, latency percentiles and failures when running additional experiments.
 
 The memory demo supports the dashboard without PostgreSQL. In that mode, `feedQueries` counts memory-store feed loads rather than SQL queries. Browser timings and live curves are separate from the recorded PostgreSQL benchmark samples.
 

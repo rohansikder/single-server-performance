@@ -1,0 +1,56 @@
+{
+  "modes": [
+    {
+      "key": "baseline",
+      "name": "Baseline",
+      "rps": 884.3558630808614,
+      "requests": 13335,
+      "median": 9.300745,
+      "p95": 75.98782059999999,
+      "p99": 81.55259858,
+      "errorRate": 0
+    },
+    {
+      "key": "node-cache",
+      "name": "Node cache",
+      "rps": 945.9741829184654,
+      "requests": 14283,
+      "median": 4.025155,
+      "p95": 87.78843699999999,
+      "p99": 101.27855898,
+      "errorRate": 0
+    },
+    {
+      "key": "nginx-cache",
+      "name": "Nginx microcache",
+      "rps": 2015.051829812614,
+      "requests": 30291,
+      "median": 1.078595,
+      "p95": 85.953038,
+      "p99": 93.83980809999996,
+      "errorRate": 0
+    }
+  ],
+  "journeys": [
+    {
+      "key": "journey-default-lock",
+      "p95": 501.2629483,
+      "requests": 27
+    },
+    {
+      "key": "journey",
+      "p95": 5.1596530000000005,
+      "requests": 26
+    }
+  ],
+  "protocol": {
+    "vus": 20,
+    "durationSeconds": 15,
+    "seedUsers": 50000,
+    "seedPosts": 500000,
+    "seedLikes": 2000000,
+    "kind": "Single feed smoke runs",
+    "generator": "Same managed host",
+    "cpuBudget": 1
+  }
+}

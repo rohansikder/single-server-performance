@@ -32,6 +32,10 @@ An initial Nginx journey run produced 27 successful HTTP requests, zero HTTP fai
 
 The final journey run produced 26 successful requests, zero failures, p95 5.15 ms and p99 6.45 ms. Both raw summaries are retained. These tiny randomized runs had different cache warmth and scheduling; the numerical difference is not a statistically controlled estimate of the tuning benefit. The repeatable findings are the successful route checks and the explicit cache-lock wait budget.
 
+## Visual report checks
+
+The visual report reads the saved k6 summaries, with an automated check that every displayed data field matches its raw input. Chromium checks covered desktop and mobile layout, percentile controls, architecture selection, CSV export, live feed requests/cache counters, actual rate-curve samples, and a static report served without the API. SVG/PNG charts were generated with Matplotlib and visually inspected. These additions do not introduce new benchmark measurements.
+
 ## Remaining measurement work
 
 The implementation and checks are complete. To establish a repeatable capacity measurement, run the longer repeated plateau protocol in the README on a dedicated target with a separate generator, record hardware and generator utilization, and save the results.

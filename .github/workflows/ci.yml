@@ -31,6 +31,7 @@ jobs:
           SEED_POSTS: 1000
           SEED_LIKES: 2000
       - run: npm test
+      - run: node scripts/check-visual-data.js
       - run: docker compose config --quiet
       - run: docker compose up -d --build
       - run: docker compose run --rm -e SEED_USERS=100 -e SEED_POSTS=1000 -e SEED_LIKES=2000 app npm run seed
