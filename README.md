@@ -4,6 +4,12 @@ How much work can one server avoid by caching the same public feed?
 
 A standalone experiment comparing three ways to serve a social feed: an indexed database query, a one-second application cache, and a one-second Nginx microcache. Built with **Node.js, PostgreSQL, Nginx, and k6**, the lab shows how moving the cache changes the request path, throughput, latency, and freshness. It includes deterministic seed data, API and PostgreSQL checks, measured results, and an interactive dashboard with live metrics.
 
+## Watch the walkthrough
+
+[![Watch the Single Server Performance Lab walkthrough](docs/video/poster.jpg)](docs/video/single-server-lab.mp4)
+
+**2 minutes 16 seconds** of architecture, caching strategies, measured results and the live dashboard, with conversational female narration. [Watch or download the video](docs/video/single-server-lab.mp4), read the [transcript](docs/video/transcript.md), or open the [chaptered player](docs/video/README.md#open-the-chaptered-player).
+
 ## Results at a glance
 
 ![Measured throughput and median latency for the three server configurations](docs/assets/performance-overview.svg)

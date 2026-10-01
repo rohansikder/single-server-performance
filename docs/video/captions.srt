@@ -1,0 +1,143 @@
+1
+00:00:00,738 --> 00:00:03,612
+How much work can a single server avoid Let's
+
+2
+00:00:03,625 --> 00:00:07,063
+run the same social feed through three configurations and
+
+3
+00:00:07,075 --> 00:00:09,013
+see what caching actually changes
+
+4
+00:00:11,286 --> 00:00:14,848
+Nginx receives the requests and Node handles the API
+
+5
+00:00:15,248 --> 00:00:19,223
+PostgreSQL stores fifty thousand users half a million posts
+
+6
+00:00:19,248 --> 00:00:22,649
+and two million likes k six drives the workload
+
+7
+00:00:23,061 --> 00:00:25,973
+The target services share a fixed resource budget
+
+8
+00:00:28,254 --> 00:00:31,779
+In the baseline every feed request reaches the database
+
+9
+00:00:32,204 --> 00:00:35,266
+An indexed query returns the latest twenty posts and
+
+10
+00:00:35,279 --> 00:00:38,979
+their authors We're starting with a reasonable implementation
+
+11
+00:00:39,229 --> 00:00:41,016
+with no artificial slowdown
+
+12
+00:00:43,278 --> 00:00:46,665
+Next Node caches the completed feed response for one
+
+13
+00:00:46,678 --> 00:00:50,740
+second A cache hit skips the database query Concurrent
+
+14
+00:00:50,753 --> 00:00:54,153
+misses share a refresh and successful writes invalidate the
+
+15
+00:00:54,165 --> 00:00:57,253
+cache Node still handles every request
+
+16
+00:00:59,514 --> 00:01:02,214
+Then we move the cache to Nginx A proxy
+
+17
+00:01:02,226 --> 00:01:05,514
+hit skips Node entirely Only the public feed is
+
+18
+00:01:05,526 --> 00:01:09,889
+cached Requests carrying Authorization or Cookie headers bypass
+
+19
+00:01:09,901 --> 00:01:11,076
+this proxy cache
+
+20
+00:01:13,350 --> 00:01:16,338
+In these short runs baseline throughput was about eight
+
+21
+00:01:16,350 --> 00:01:19,888
+hundred eighty four requests per second Node caching reached
+
+22
+00:01:19,900 --> 00:01:23,762
+nine hundred forty six Nginx reached two thousand fifteen
+
+23
+00:01:24,175 --> 00:01:26,425
+That's two point two eight times the baseline
+
+24
+00:01:28,686 --> 00:01:32,199
+Median latency fell from nine point three milliseconds to
+
+25
+00:01:32,211 --> 00:01:35,311
+four point zero three then one point zero eight
+
+26
+00:01:35,724 --> 00:01:38,661
+But both caches had higher ninety-fifth and ninety-ninth
+
+27
+00:01:38,674 --> 00:01:40,961
+percentile latency than the baseline
+
+28
+00:01:43,218 --> 00:01:46,642
+The dashboard puts the evidence in one place Compare
+
+29
+00:01:46,655 --> 00:01:50,705
+latency percentiles explore the request paths and send real
+
+30
+00:01:50,718 --> 00:01:54,718
+feed requests Live counters show feed loads and application
+
+31
+00:01:54,730 --> 00:01:55,518
+cache hits
+
+32
+00:01:57,786 --> 00:02:01,411
+Node invalidates its cache on writes Nginx relies on
+
+33
+00:02:01,423 --> 00:02:04,448
+expiry so updates can appear roughly one to two
+
+34
+00:02:04,461 --> 00:02:08,036
+seconds late These fifteen second smoke tests ran on
+
+35
+00:02:08,048 --> 00:02:11,736
+a shared host So explain the tradeoffs then repeat
+
+36
+00:02:11,748 --> 00:02:14,060
+longer tests before claiming capacity
